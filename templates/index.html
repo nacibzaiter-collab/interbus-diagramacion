@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagramación — INTERBUS</title>
+<style>
+:root{
+  --bg:#0d1117;--card:#1a1f2e;--border:#2d3a52;
+  --gold:#e8c875;--green:#27ae60;--red:#e74c3c;
+  --blue:#2d6bb0;--muted:#8899bb;--text:#c9d1d9;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;min-height:100vh;padding-bottom:40px}
+header{background:linear-gradient(90deg,#1a2236,#1f2d42);border-bottom:2px solid var(--gold);padding:16px 20px;position:sticky;top:0;z-index:100}
+.logo{font-size:20px;font-weight:800;color:var(--gold)}
+.sub{font-size:11px;color:var(--muted);margin-top:2px;font-family:monospace}
+main{max-width:860px;margin:0 auto;padding:20px 14px}
+
+/* ── Steps ── */
+.steps{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:20px}
+.step{flex:1;padding:10px 2px;text-align:center;font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#3a4a62;border-right:1px solid var(--border);font-family:monospace;transition:all .3s;cursor:default}
+.step.active{background:rgba(232,200,117,.12);color:var(--gold)}
+.step.done{background:rgba(39,174,96,.12);color:var(--green)}
+.step:last-child{border-right:none}
+
+/* ── Cards ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px}
+.card-title{color:var(--gold);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;font-family:monospace}
+
+/* ── Botones generales ── */
+.btn{display:block;width:100%;padding:15px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;text-align:center;text-decoration:none;margin-top:10px;letter-spacing:.03em;transition:filter .15s;-webkit-tap-highlight-color:transparent}
+.btn:active{filter:brightness(.85)}
+.btn-green{background:linear-gradient(135deg,#1e6b3c,#27ae60);color:#fff}
+.btn-blue{background:linear-gradient(135deg,#1a4a7a,#2d6bb0);color:#fff}
+.btn-ghost{background:rgba(45,58,82,.5);color:var(--muted);border:1px solid var(--border)}
+.btn-gold{background:linear-gradient(135deg,#7a5010,#c8a020);color:#fff}
+.btn-sm{width:auto;display:inline-block;padding:9px 16px;font-size:13px;margin-top:0}
+
+/* ── File upload (Android-safe) ── */
+/* El secreto: input visible pero transparente, tamaño completo encima del label */
+.upload-wrap{position:relative;margin-top:10px}
+.upload-btn{display:block;width:100%;padding:18px 14px;border-radius:10px;font-size:15px;font-weight:700;text-align:center;cursor:pointer;border:2px dashed #2d4a7a;color:var(--muted);background:rgba(30,50,80,.15);transition:all .2s;line-height:1.4}
+.upload-btn.loaded{border-color:var(--green);background:rgba(39,174,96,.08);color:#6ec87e;border-style:solid}
+.upload-btn.optional{border-color:#2d3a52;background:rgba(20,30,50,.2);color:#3a4a62;font-size:13px;padding:12px}
+.upload-btn.optional.loaded{border-color:#7a5010;background:rgba(120,80,16,.1);color:#c8a020}
+/* Input ENCIMA del botón, transparente — funciona en Android Chrome */
+.upload-wrap input[type=file]{
+  position:absolute;inset:0;width:100%;height:100%;
+  opacity:0;cursor:pointer;font-size:16px;
+}
+
+/* ── Status ── */
+.status{border-radius:8px;padding:10px 12px;font-size:12px;font-family:monospace;line-height:1.7;margin-top:8px}
+.status.ok{background:rgba(39,174,96,.1);border:1px solid #1e5a30;color:#6ec87e}
+.status.warn{background:rgba(200,160,30,.1);border:1px solid #6a4a10;color:var(--gold)}
+.status.err{background:rgba(180,30,30,.1);border:1px solid #8b2020;color:#ff7070}
+.status.info{background:rgba(45,107,176,.1);border:1px solid #2d4a7a;color:#7ab3e0}
+
+/* ── Formulario ── */
+.fl{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:6px;margin-top:14px;font-family:monospace}
+select,input[type=text],input[type=number]{
+  background:#111827;border:1px solid var(--border);border-radius:8px;
+  color:var(--text);padding:12px 13px;font-size:15px;width:100%;
+  outline:none;-webkit-appearance:none;appearance:none;
+}
+select:focus,input:focus{border-color:var(--gold)}
+
+/* ── Tabla ── */
+.tbl-wrap{overflow-x:auto;margin-top:2px}
+.tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:520px}
+.tbl th{background:#1a2539;color:var(--gold);padding:9px 10px;text-align:left;font-weight:700;font-size:10px;text-transform:uppercase;border-bottom:2px solid var(--border);font-family:monospace;white-space:nowrap}
+.tbl td{padding:8px 10px;border-bottom:1px solid #1a2236;white-space:nowrap}
+.tbl tr:nth-child(even) td{background:rgba(25,38,65,.25)}
+
+/* ── Chips (coches) ── */
+.chip{display:inline-flex;align-items:center;gap:6px;background:#1a2539;border:1px solid #2d4a7a;border-radius:6px;padding:5px 10px;margin:3px}
+.chip span{color:var(--gold);font-weight:700;font-family:monospace;font-size:13px}
+.chip button{background:none;border:none;color:#ff7070;cursor:pointer;font-size:16px;padding:0;line-height:1}
+
+/* ── Badge ── */
+.badge{display:inline-block;background:#1f2d42;color:#7ab3e0;border-radius:5px;padding:2px 7px;font-size:11px;font-weight:700;font-family:monospace}
+
+/* ── Progress ── */
+.pbar{height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin:10px 0}
+.pfill{height:100%;background:linear-gradient(90deg,#1e6b3c,#e8c875);border-radius:4px;width:0%;transition:width .4s}
+
+/* ── Log ── */
+.log{background:#080c12;border:1px solid var(--border);border-radius:8px;padding:12px;max-height:200px;overflow-y:auto;font-size:11px;line-height:1.9;font-family:monospace;color:#6ec87e;margin-top:10px;white-space:pre-wrap}
+
+/* ── Stats ── */
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.stat{background:#1a2539;border-radius:10px;padding:14px;text-align:center;border:1px solid var(--border)}
+.stat-n{font-size:26px;font-weight:800;font-family:monospace}
+.stat-l{font-size:10px;color:var(--muted);margin-top:3px;text-transform:uppercase}
+
+/* ── Fecha header ── */
+.fhdr{background:linear-gradient(90deg,#1a2539,#1f2d42);border-radius:6px 6px 0 0;padding:9px 13px;color:var(--gold);font-weight:700;font-size:12px;margin-top:14px;font-family:monospace;border-left:3px solid var(--gold)}
+
+/* ── Misc ── */
+.hidden{display:none!important}
+.flex-row{display:flex;gap:10px;align-items:center}
+.ok-card{border-color:var(--green)!important;background:rgba(30,107,60,.06)!important}
+.divider{height:1px;background:var(--border);margin:14px 0}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">🚌 Diagramación de Servicios</div>
+  <div class="sub">INTERBUS SRL — ROSARIO ÁLVAREZ / ACEBAL</div>
+</header>
+<main>
+
+<!-- ── Steps ── -->
+<div class="steps">
+  <div class="step active" id="s0">1. Archivos</div>
+  <div class="step" id="s1">2. Config</div>
+  <div class="step" id="s2">3. Generar</div>
+  <div class="step" id="s3">4. Resultado</div>
+</div>
+
+<div id="msg-global" class="status err hidden" style="margin-bottom:12px"></div>
+
+<!-- ════════════════════════════════════════
+     PASO 1 — ARCHIVOS
+════════════════════════════════════════ -->
+<div id="p0">
+
+  <!-- Citación semanal -->
+  <div class="card">
+    <div class="card-title">📅 Citación de Servicios <span style="color:var(--muted);font-size:10px">(semanal)</span></div>
+    <div class="upload-wrap">
+      <div class="upload-btn" id="lbl-cit">
+        📂 Seleccionar Planilla de Citación<br>
+        <span style="font-size:12px;font-weight:400;opacity:.7">.xlsx / .xlsm</span>
+      </div>
+      <input type="file" accept=".xlsx,.xlsm,.xls" id="inp-cit" onchange="onCit(this)">
+    </div>
+    <div id="cit-status" class="status info" style="margin-top:8px">Sin archivo seleccionado</div>
+  </div>
+
+  <!-- Maestro -->
+  <div class="card">
+    <div class="card-title">📋 Planillas Maestro
+      {% if maestro_ok %}
+        <span style="color:var(--green);font-size:10px;font-weight:400"> ✓ {{ maestro_info }}</span>
+      {% else %}
+        <span style="color:var(--gold);font-size:10px;font-weight:400"> ⚠ No cargado aún</span>
+      {% endif %}
+    </div>
+
+    {% if maestro_ok %}
+    <div class="status ok">✓ {{ maestro_info }} — guardado en el servidor</div>
+    {% else %}
+    <div class="status warn">Primera vez: subí el archivo Maestro. Después solo lo actualizás cuando cambie.</div>
+    {% endif %}
+
+    <div class="upload-wrap" style="margin-top:10px">
+      <div class="upload-btn optional {% if maestro_ok %}{% endif %}" id="lbl-mae">
+        🔄 {% if maestro_ok %}Actualizar Maestro{% else %}Subir Maestro (.xlsm){% endif %}<br>
+        <span style="font-size:11px;font-weight:400;opacity:.7">Se guarda como "Planillas Maestro MM/AA"</span>
+      </div>
+      <input type="file" accept=".xlsx,.xlsm,.xls" id="inp-mae" onchange="onMae(this)">
+    </div>
+    <div id="mae-status" class="hidden status ok" style="margin-top:8px"></div>
+  </div>
+
+  <button class="btn btn-green" onclick="irConfig()">Continuar →</button>
+</div>
+
+<!-- ════════════════════════════════════════
+     PASO 2 — CONFIGURACIÓN
+════════════════════════════════════════ -->
+<div id="p1" class="hidden">
+
+  <div class="card">
+    <div class="card-title">📆 Configuración de Diagramación</div>
+
+    <span class="fl">Tipo de Semana</span>
+    <select id="sel-tipo" onchange="sincTab()">
+      <option value="">— Elegir tipo —</option>
+      <option>Semana Normal</option>
+      <option>Lunes Y Martes Feriado</option>
+      <option>Lunes Feriado</option>
+      <option>Martes Feriado</option>
+      <option>Lunes Y Viernes Feriado</option>
+      <option>Miércoles Feriado</option>
+      <option>Jueves Feriado</option>
+      <option>Jueves Y Viernes Feriado</option>
+      <option>Viernes Feriado</option>
+      <option>Sábado Feriado</option>
+      <option>Vacacional Miérc. Feriado</option>
+      <option>Vacacional Semana Normal</option>
+      <option>Vacacional Lun Y Mar Fer</option>
+      <option>Vacacional MierSabJueFer</option>
+      <option>Viernes como Sábado</option>
+      <option>Martes Sab Vier Feriado</option>
+      <option>Sábados</option>
+      <option>Domingos Y Feriados</option>
+    </select>
+
+    <span class="fl">Pestaña del Maestro</span>
+    <select id="sel-tab">
+      <option value="">— Cargando pestañas... —</option>
+    </select>
+
+    <span class="fl">N° de Planilla inicial</span>
+    <input type="number" id="inp-num" value="6800" min="1">
+    <div id="num-info" style="font-size:11px;color:var(--muted);margin-top:5px;font-family:monospace"></div>
+  </div>
+
+  <!-- Coches -->
+  <div class="card">
+    <div class="card-title">🚌 Coches Disponibles</div>
+    <div id="coches-wrap" style="margin-bottom:12px"></div>
+    <div class="flex-row">
+      <input type="text" id="inp-coche" placeholder="Nro. coche" style="width:110px">
+      <button class="btn btn-sm btn-blue" onclick="addCoche()">+ Agregar</button>
+    </div>
+  </div>
+
+  <!-- Legajos -->
+  <div class="card">
+    <div class="card-title">👤 Legajos — Conductores</div>
+    <div style="max-height:260px;overflow-y:auto;margin-bottom:12px">
+      <table class="tbl">
+        <thead><tr><th>Código</th><th>Conductor</th><th></th></tr></thead>
+        <tbody id="tb-leg"></tbody>
+      </table>
+    </div>
+    <div class="flex-row">
+      <input type="text" id="inp-cod" placeholder="Código" style="width:100px" maxlength="6">
+      <input type="text" id="inp-nom" placeholder="Apellido Nombre" style="flex:1">
+      <button class="btn btn-sm btn-blue" onclick="addLeg()">+</button>
+    </div>
+  </div>
+
+  <button class="btn-ghost btn" onclick="irArchivos()">← Volver</button>
+  <button class="btn btn-gold" onclick="generar()">⚙ Generar Planillas</button>
+</div>
+
+<!-- ════════════════════════════════════════
+     PASO 3 — PROCESANDO
+════════════════════════════════════════ -->
+<div id="p2" class="hidden">
+  <div class="card">
+    <div class="card-title">⚙ Generando planillas...</div>
+    <div class="pbar"><div class="pfill" id="pf"></div></div>
+    <div style="text-align:center;font-family:monospace;color:var(--gold);margin:8px 0;font-size:13px" id="pp">Procesando...</div>
+    <div class="log" id="log">Iniciando...</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     PASO 4 — RESULTADO
+════════════════════════════════════════ -->
+<div id="p3" class="hidden">
+  <div class="card">
+    <div class="card-title">✅ Planillas Generadas</div>
+    <div class="stat-grid">
+      <div class="stat"><div class="stat-n" style="color:var(--gold)" id="st0">0</div><div class="stat-l">Planillas</div></div>
+      <div class="stat"><div class="stat-n" style="color:var(--green)" id="st1">–</div><div class="stat-l">Primera N°</div></div>
+      <div class="stat"><div class="stat-n" style="color:#4a90d9" id="st2">–</div><div class="stat-l">Última N°</div></div>
+    </div>
+    <a class="btn btn-green" href="/descargar_excel" id="btn-excel">📥 Descargar Excel</a>
+    <a class="btn btn-blue" href="/descargar_csv" id="btn-csv">📄 Descargar CSV</a>
+    <button class="btn btn-ghost" onclick="nuevaDiag()">↺ Nueva Diagramación</button>
+    <div class="log" id="log2" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 Detalle por Fecha</div>
+    <div id="res-tabs"></div>
+  </div>
+
+  <div class="card ok-card">
+    <div style="color:var(--green);font-weight:700;font-size:13px;font-family:monospace" id="msg-next"></div>
+  </div>
+</div>
+
+</main>
+<script>
+// ══════════════════════════════════════════════════
+// ESTADO
+// ══════════════════════════════════════════════════
+const MESES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+
+let LEGS = [
+  {c:"2040",n:"AGUERRE P."},{c:"2044",n:"BELTRAMO J."},
+  {c:"2037",n:"DEL CANTO M."},{c:"2035",n:"DEL CANTO M."},
+  {c:"2050",n:"FERREYRA G."},{c:"2011",n:"GIULIANI M."},
+  {c:"2056",n:"KANCHEFF C."},{c:"2041",n:"LAMBRUSCHI J."},
+  {c:"2017",n:"LASO M."},{c:"2057",n:"LUQUEZ D."},
+  {c:"2038",n:"MURCIA S."},{c:"2022",n:"PAOLLICELLI A."},
+  {c:"2048",n:"PASCASIO G."},{c:"2015",n:"PEREYRA W."},
+  {c:"2003",n:"ROSCHINI M."},{c:"2452",n:"RUIZ H."},
+  {c:"2460",n:"VESPRINI R."},{c:"2046",n:"VOLPINI A."},
+  {c:"3003",n:"PACI G."},{c:"2111",n:"GUARDIA"},
+];
+let COCHES = ["02","03","04","05","06","07","09","10","11"];
+let citFile = null;
+
+const TIPOS_KEYS = {
+  "Semana Normal":             ["normal"],
+  "Lunes Y Martes Feriado":    ["lunes y martes"],
+  "Lunes Feriado":             ["lunes feriado"],
+  "Martes Feriado":            ["martes feriado"],
+  "Lunes Y Viernes Feriado":   ["lunes y viernes"],
+  "Miércoles Feriado":         ["miercoles feriado","miércoles feriado"],
+  "Jueves Feriado":            ["jueves feriado"],
+  "Jueves Y Viernes Feriado":  ["jueves y viernes"],
+  "Viernes Feriado":           ["viernes feriado"],
+  "Sábado Feriado":            ["sabado feriado","sábado feriado"],
+  "Vacacional Miérc. Feriado": ["vacacional miercoles","vacacional miércoles"],
+  "Vacacional Semana Normal":  ["vacacional semana"],
+  "Vacacional Lun Y Mar Fer":  ["vacacional lun"],
+  "Vacacional MierSabJueFer":  ["vacacional mier"],
+  "Viernes como Sábado":       ["viernes como"],
+  "Martes Sab Vier Feriado":   ["martes sab"],
+  "Sábados":                   ["sabados","sábados"],
+  "Domingos Y Feriados":       ["domingos"],
+};
+
+// Leer contador guardado
+let contador = parseInt(localStorage.getItem("plani_cnt") || "6800");
+document.getElementById("inp-num").value = contador;
+document.getElementById("num-info").textContent = "Último guardado: " + contador;
+
+renderLegs(); renderCoches();
+cargarPestañas();
+
+// ══════════════════════════════════════════════════
+// NAVEGACIÓN
+// ══════════════════════════════════════════════════
+function showPage(i){
+  ["p0","p1","p2","p3"].forEach((p,j)=>document.getElementById(p).classList.toggle("hidden",j!==i));
+  ["s0","s1","s2","s3"].forEach((s,j)=>{
+    document.getElementById(s).className="step"+(j<i?" done":j===i?" active":"");
+  });
+  window.scrollTo(0,0);
+}
+function irArchivos(){ clearMsg(); showPage(0); }
+function irConfig(){
+  if(!citFile){ showMsg("Seleccioná la planilla de citación primero."); return; }
+  clearMsg(); showPage(1);
+}
+function showMsg(m){ const e=document.getElementById("msg-global"); e.textContent="⚠ "+m; e.classList.remove("hidden"); }
+function clearMsg(){ document.getElementById("msg-global").classList.add("hidden"); }
+
+// ══════════════════════════════════════════════════
+// FILE INPUTS
+// ══════════════════════════════════════════════════
+function onCit(inp){
+  const f = inp.files[0]; if(!f) return;
+  citFile = f;
+  const btn = document.getElementById("lbl-cit");
+  btn.classList.add("loaded");
+  btn.innerHTML = `✓ ${f.name}<br><span style="font-size:12px;font-weight:400">Archivo seleccionado</span>`;
+  document.getElementById("cit-status").className = "status ok";
+  document.getElementById("cit-status").textContent = "✓ " + f.name + " — listo para procesar";
+}
+
+function onMae(inp){
+  const f = inp.files[0]; if(!f) return;
+  const fd = new FormData();
+  fd.append("maestro", f);
+  document.getElementById("lbl-mae").innerHTML = "⏳ Subiendo...";
+
+  fetch("/upload_maestro", {method:"POST", body:fd})
+    .then(r=>r.json())
+    .then(d=>{
+      if(d.ok){
+        document.getElementById("lbl-mae").classList.add("loaded");
+        document.getElementById("lbl-mae").innerHTML = `✓ ${d.nombre}<br><span style="font-size:11px;font-weight:400">Guardado en el servidor</span>`;
+        const s = document.getElementById("mae-status");
+        s.className = "status ok"; s.textContent = "✓ " + d.nombre; s.classList.remove("hidden");
+        cargarPestañas(); // refrescar pestañas
+      } else {
+        showMsg("Error al subir Maestro: " + d.error);
+      }
+    })
+    .catch(e=>showMsg("Error de red: "+e));
+}
+
+// ══════════════════════════════════════════════════
+// PESTAÑAS DEL MAESTRO
+// ══════════════════════════════════════════════════
+function cargarPestañas(){
+  fetch("/get_sheets")
+    .then(r=>r.json())
+    .then(d=>{
+      if(!d.ok) return;
+      const sel = document.getElementById("sel-tab");
+      sel.innerHTML = "";
+      d.sheets.forEach(s=>{
+        const o=document.createElement("option"); o.value=o.text=s; sel.appendChild(o);
+      });
+    }).catch(()=>{});
+}
+
+function sincTab(){
+  const tipo = document.getElementById("sel-tipo").value.toLowerCase();
+  const keys = TIPOS_KEYS[document.getElementById("sel-tipo").value] || [];
+  const sel = document.getElementById("sel-tab");
+  for(const opt of sel.options){
+    if(keys.some(k=>opt.value.toLowerCase().includes(k))){
+      sel.value = opt.value; return;
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════
+// LEGAJOS / COCHES
+// ══════════════════════════════════════════════════
+function renderLegs(){
+  document.getElementById("tb-leg").innerHTML = LEGS.map((l,i)=>`
+    <tr>
+      <td><span class="badge">${l.c}</span></td>
+      <td style="font-weight:600">${l.n}</td>
+      <td><button onclick="delLeg(${i})" style="background:rgba(180,30,30,.2);color:#ff7070;border:1px solid #7a1a1a;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer">✕</button></td>
+    </tr>`).join("");
+}
+function renderCoches(){
+  document.getElementById("coches-wrap").innerHTML = COCHES.map(c=>`
+    <div class="chip">
+      <span>Coche ${c}</span>
+      <button onclick="delCoche('${c}')">×</button>
+    </div>`).join("");
+}
+function addLeg(){
+  const c=document.getElementById("inp-cod").value.trim();
+  const n=document.getElementById("inp-nom").value.trim().toUpperCase();
+  if(!c||!n) return;
+  LEGS.push({c,n});
+  document.getElementById("inp-cod").value="";
+  document.getElementById("inp-nom").value="";
+  renderLegs();
+}
+function delLeg(i){ LEGS.splice(i,1); renderLegs(); }
+function addCoche(){
+  const v=document.getElementById("inp-coche").value.trim().padStart(2,"0");
+  if(!v||COCHES.includes(v)) return;
+  COCHES.push(v); COCHES.sort();
+  document.getElementById("inp-coche").value=""; renderCoches();
+}
+function delCoche(c){ COCHES=COCHES.filter(x=>x!==c); renderCoches(); }
+
+// ══════════════════════════════════════════════════
+// GENERAR
+// ══════════════════════════════════════════════════
+function generar(){
+  const tipo = document.getElementById("sel-tipo").value;
+  const tab  = document.getElementById("sel-tab").value;
+  if(!tipo){ showMsg("Seleccioná el tipo de semana."); return; }
+  if(!tab){  showMsg("No se encontró la pestaña del Maestro. ¿Subiste el archivo?"); return; }
+  if(!citFile){ showMsg("Falta la planilla de citación."); return; }
+
+  contador = parseInt(document.getElementById("inp-num").value) || 6800;
+  clearMsg();
+  showPage(2);
+
+  // Animar barra
+  let prog = 0;
+  const iv = setInterval(()=>{ prog = Math.min(prog+2, 85); setP(prog); }, 100);
+
+  const fd = new FormData();
+  fd.append("citacion",   citFile);
+  fd.append("sheet_name", tab);
+  fd.append("contador",   contador);
+  fd.append("legajos",    JSON.stringify(Object.fromEntries(LEGS.map(l=>[l.c,l.n]))));
+  fd.append("coches",     JSON.stringify(COCHES));
+
+  fetch("/generar", {method:"POST", body:fd})
+    .then(r=>r.json())
+    .then(d=>{
+      clearInterval(iv); setP(100);
+      if(!d.ok){ showMsg(d.error); showPage(1); return; }
+
+      // Guardar contador
+      localStorage.setItem("plani_cnt", String(d.nuevo_contador));
+      contador = d.nuevo_contador;
+
+      // Stats
+      document.getElementById("st0").textContent = d.total;
+      document.getElementById("st1").textContent = d.primera;
+      document.getElementById("st2").textContent = d.ultima;
+      document.getElementById("msg-next").textContent =
+        `✅ Próxima diagramación empieza en planilla #${d.nuevo_contador}`;
+
+      // Log
+      document.getElementById("log").textContent  = d.log;
+      document.getElementById("log2").textContent = d.log;
+
+      // Tabla por fecha
+      document.getElementById("res-tabs").innerHTML = d.fechas.map(f=>`
+        <div class="fhdr">📅 ${f.fecha_disp} · ${f.cantidad} planillas</div>
+        <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr>
+            <th>N° Plan.</th><th>Legajo</th><th>Conductor</th>
+            <th>Ruta</th><th>Svc</th><th>Tipo</th><th>Coche</th>
+          </tr></thead>
+          <tbody>${f.items.map(p=>`
+            <tr>
+              <td style="color:var(--gold);font-weight:700;font-family:monospace">${p.nro}</td>
+              <td><span class="badge">${p.legajo}</span></td>
+              <td style="font-weight:600">${p.conductor}</td>
+              <td style="font-size:11px;color:var(--muted)">${p.ruta}</td>
+              <td style="font-family:monospace">${p.svc}</td>
+              <td style="font-size:10px">${p.tipo}</td>
+              <td style="color:var(--green);font-weight:700;font-family:monospace">C${p.coche}</td>
+            </tr>`).join("")}
+          </tbody>
+        </table></div>
+      `).join("");
+
+      showPage(3);
+    })
+    .catch(e=>{ clearInterval(iv); showMsg("Error de red: "+e); showPage(1); });
+}
+
+function setP(p){
+  document.getElementById("pf").style.width = p+"%";
+  document.getElementById("pp").textContent = p < 100 ? `Procesando... ${p}%` : "✓ Completado";
+}
+
+function nuevaDiag(){
+  citFile = null;
+  document.getElementById("lbl-cit").classList.remove("loaded");
+  document.getElementById("lbl-cit").innerHTML = `📂 Seleccionar Planilla de Citación<br><span style="font-size:12px;font-weight:400;opacity:.7">.xlsx / .xlsm</span>`;
+  document.getElementById("cit-status").className = "status info";
+  document.getElementById("cit-status").textContent = "Sin archivo seleccionado";
+  document.getElementById("inp-cit").value = "";
+  document.getElementById("inp-num").value = contador;
+  document.getElementById("num-info").textContent = "Último guardado: " + contador;
+  showPage(0);
+}
+</script>
+</body>
+</html>
